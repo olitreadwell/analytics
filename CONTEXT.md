@@ -26,7 +26,8 @@
 
 ## Gap ledger (dedupe — READ FIRST, never re-pick)
 - `2026-09-03` trivial/minor-fix pass (typos/dead links/stale commands) — outcome: see tried-repos.jsonl.
-- `2026-09-09` self-found frontend gap: `assets/js/dashboard/util/goals.ts` `isPageViewGoal/1` is missing its `return` (always returns `undefined`). Introduced 2026-01-07 (#5985), usage removed by #6440 so currently dead code. Fix + unit test. Dedupe: no upstream issue/PR for this. — outcome: pr-opened (see tried-repos.jsonl).
+- `2026-09-09` self-found frontend gap: `assets/js/dashboard/util/goals.ts` `isPageViewGoal/1` is missing its `return` (always returns `undefined`). Introduced 2026-01-07 (#5985), usage removed by #6440 so currently dead code. Fix + unit test. Dedupe: no upstream issue/PR for this. — outcome: dropped (function is dead code — not referenced anywhere in committed master; prior run left an uncommitted fix+test, no PR was opened).
+- `2026-09-09` self-found test-coverage gap: `assets/js/dashboard/util/number-formatter.ts` exports `durationFormatter`, `roundedNumberFormatter`, `percentageFormatter`, `nullable` (all used in production via `stats/reports/metric-formatter.ts`) but had no direct unit tests. Added 14 tests to `number-formatter.test.ts`. Verified: `npx jest js/dashboard/util/number-formatter.test.ts` PASS, `tsc --noEmit` PASS, `eslint` PASS, `prettier --check` PASS. Dedupe: no upstream issue/PR for these helpers. — outcome: pr-opened (https://github.com/olitreadwell/analytics/pull/8, branch `add-number-formatter-tests`).
 
 ## Mined gaps (discovered, not yet attempted)
 - `2026-09-09` backend `Plausible.Pagination.to_int/1` (`lib/plausible/pagination.ex`) raises `ArgumentError` on a non-integer `limit` string. NOT reachable via the Plugins API: `OpenApiSpex.Plug.CastAndValidate` (declared `limit: type: :integer`) rejects non-integer with 400 before the action runs. Only consumers are Plugins API controllers. — status: dropped (not reachable via public API).
