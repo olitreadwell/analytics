@@ -194,7 +194,7 @@ export interface QueryApiSchema {
     time_labels?: boolean;
     imports?: boolean;
     /**
-     * If set, returns the total number of result rows rows before pagination under `meta.total_rows`
+     * If set, returns the total number of result rows before pagination under `meta.total_rows`
      */
     total_rows?: boolean;
     /**
