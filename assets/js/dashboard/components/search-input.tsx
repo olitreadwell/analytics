@@ -77,7 +77,7 @@ export const SearchInput = ({
           ref={searchRef}
           type="text"
           placeholder=" "
-          className="peer w-full text-sm dark:text-gray-100 block border-gray-300 dark:border-gray-750 rounded-md dark:bg-gray-750 dark:placeholder:text-gray-400 focus:outline-none focus:ring-3 focus:ring-indigo-500/20 dark:focus:ring-indigo-500/25 focus:border-indigo-500"
+          className="peer w-full text-base dark:text-gray-100 block border-gray-300 dark:border-gray-750 rounded-md dark:bg-gray-750 dark:placeholder:text-gray-400 focus:outline-none focus:ring-3 focus:ring-indigo-500/20 dark:focus:ring-indigo-500/25 focus:border-indigo-500"
           onChange={handleInputChange}
         />
         {!hasValue && (
