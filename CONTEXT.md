@@ -1,5 +1,5 @@
 # plausible/analytics context
-> refreshed 2026-09-23 | upstream default: master @ e38de9fe107de19dfdffb43347c3ad8e2ed5f57a
+> refreshed 2026-09-23 | upstream default: master @ e38de9fe107de19dfdffb43347c3ad8e2ed5f57a (upstream moved since 2026-09-10 refresh)
 
 ## Identity & policies
 - upstream: plausible/analytics, default branch `master`, primary language Elixir (Phoenix) + React/JS frontend.
@@ -23,6 +23,7 @@
 ## Issue-area health
 - Stats API issues #6500 (HTTP 500 on non-integer page param), #6260 (visitor counts with event:page filter) are real scoped bugs for a future non-trivial pass.
 - #6500 is CLAIMED by open PR #6501 (approved by ukutaht, not merged) — do NOT re-pick.
+- #6235 (Mobile Safari zooms focused text inputs smaller than 16px) — open, unassigned, no comments; FIXED by fork PR #28 (2026-09-23), see gap ledger.
 
 ## Gap ledger (dedupe — READ FIRST, never re-pick)
 - `2026-09-03` trivial/minor-fix pass (typos/dead links/stale commands) — outcome: see tried-repos.jsonl.
@@ -34,5 +35,6 @@
 - `2026-09-10` doc path fix: `tracker/ARCHITECTURE.md` line 9 `tracker/installation-support/` (hyphen) -> `tracker/installation_support/` (actual dir, underscore). Verified dir exists; line 11 and 72 use the underscore form; not in dedupe ledger and not claimed by any upstream PR. Single fix, was SKIPPED this cycle (below 3-fix minimum); combine into a future packed trivial PR.
 
 - `2026-09-23` trivial/minor-fix pass (typos/stale refs) — 5 genuine, verified, meaning-preserving fixes in ONE PR (6 files): (1) `assets/js/dashboard/segments/segment-modals.tsx` + `.test.tsx` 'Segment not found with with'->'...with' (duplicated 'with' in a user-facing 404 error; test assertion updated to match); (2) `lib/plausible/stats/sql/expression.ex` @moduledoc 'tagged with with'->'tagged with'; (3) `extra/lib/plausible/installation_support/checks/url.ex` comment 'the the domains'->'the domains'; (4) `test/plausible_web/live/register_form_test.exs` test name 'on on-existent'->'on non-existent'; (5) `tracker/ARCHITECTURE.md` line 9 `/tracker/installation-support/`->`/tracker/installation_support/` (the single fix parked in Mined gaps since 2026-09-10, now included). Deduped against prior passes (PR #2/#6648, PR #9) — no overlap. Verified locally: jest segment-modals.test.tsx PASS (7/7), eslint PASS, prettier --check PASS, tsc --noEmit PASS. — outcome: pr-opened (https://github.com/olitreadwell/analytics/pull/27, branch `fix-typos-and-doc-path`).
+- `2026-09-23` frontend a11y issue #6235 — Mobile Safari auto-zooms into focused text inputs when their font size is below 16px. Open, unassigned, no comments since 2026-04-08, still reproducible on current master. Fix = raise the dashboard's real text-entry fields from `text-sm`/`text-xs` to `text-base` (16px): form-elements.tsx (fieldClassName), search-input.tsx, combobox.js (searchBoxClass), exploration-column.tsx, plus a CHANGELOG entry. Scope: ONLY typed-text fields; buttons/selects/labels left at text-sm. Dedupe: no open/merged upstream PR (gh search prs for "Mobile Safari", "16px", "text inputs" = none). Verified: typecheck/eslint/check-format/stylelint PASS; dashboard component tests (segment-modals, filters-bar, csv-export) PASS; full-suite has pre-existing details-breakdown/google-keywords timeout flakes unrelated to this change. — outcome: pr-opened (https://github.com/olitreadwell/analytics/pull/28, branch fix-ios-input-zoom).
 ## Mined gaps (discovered, not yet attempted)
 - `2026-09-09` backend `Plausible.Pagination.to_int/1` (`lib/plausible/pagination.ex`) raises `ArgumentError` on a non-integer `limit` string. NOT reachable via the Plugins API: `OpenApiSpex.Plug.CastAndValidate` (declared `limit: type: :integer`) rejects non-integer with 400 before the action runs. Only consumers are Plugins API controllers. — status: dropped (not reachable via public API).
