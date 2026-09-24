@@ -1,5 +1,5 @@
 # plausible/analytics context
-> refreshed 2026-09-24 | upstream default: master @ b04e601232064aced1b899a71630cba262e9eeee
+> refreshed 2026-09-24 | upstream default: master @ 27cbc4419c
 
 ## Identity & policies
 - upstream: plausible/analytics, default branch `master`, primary language Elixir (Phoenix) + React/JS frontend.
@@ -26,6 +26,7 @@
 - #6235 (Mobile Safari zooms focused text inputs smaller than 16px) — open, unassigned, no comments; FIXED by fork PR #28 (2026-09-23), see gap ledger.
 
 ## Gap ledger (dedupe — READ FIRST, never re-pick)
+- `2026-09-24` trivial/minor-fix pass (typos/dead links/stale commands/stale paths) — outcome: SKIPPED (below MINIMUM 3 genuine fixes). Refreshed context (upstream master b04e6012 -> 27cbc4419c; fork master synced). Exhaustive search on upstream head 27cbc4419c found NO new genuine fix: codespell (whole repo excl. vendored priv/ua_inspector, priv/ref_inspector, data/fixtures) only returns vendored/data/brand hits (optIn, DoubleClick), prior-harvested hits (Identies, afterAll, unparseable) and US/UK variant unparseable (nitpick, prior-skipped); duplicated-word scan clean; all markdown links curl-verified (plausible.io/feedback 403 = bot-protected redirect, prior-skipped; plausible.io/api/event is a code default value, not a doc hyperlink); stale path refs only the two already claimed by PR #31 (portal.tsx verification.ex comment, ARCHITECTURE.md line 11 installation.ex); CONTRIBUTING commands + Makefile targets all valid. Every easy win already harvested by fork PRs #2/#6648, #9/#27, #31 (none merged upstream). Held the PR (no fork PR opened), per config trivial_fix_rules.
 - `2026-09-03` trivial/minor-fix pass (typos/dead links/stale commands) — outcome: see tried-repos.jsonl.
 - `2026-09-09` self-found frontend gap: `assets/js/dashboard/util/goals.ts` `isPageViewGoal/1` is missing its `return` (always returns `undefined`). Introduced 2026-01-07 (#5985), usage removed by #6440 so currently dead code. Fix + unit test. Dedupe: no upstream issue/PR for this. — outcome: dropped (function is dead code — not referenced anywhere in committed master; prior run left an uncommitted fix+test, no PR was opened).
 - `2026-09-09` self-found test-coverage gap: `assets/js/dashboard/util/number-formatter.ts` exports `durationFormatter`, `roundedNumberFormatter`, `percentageFormatter`, `nullable` (all used in production via `stats/reports/metric-formatter.ts`) but had no direct unit tests. Added 14 tests to `number-formatter.test.ts`. Verified: `npx jest js/dashboard/util/number-formatter.test.ts` PASS, `tsc --noEmit` PASS, `eslint` PASS, `prettier --check` PASS. Dedupe: no upstream issue/PR for these helpers. — outcome: pr-opened (https://github.com/olitreadwell/analytics/pull/8, branch `add-number-formatter-tests`).
