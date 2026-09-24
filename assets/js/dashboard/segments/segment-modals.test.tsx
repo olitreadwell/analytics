@@ -57,7 +57,7 @@ describe('Segment details modal - errors', () => {
         role: Role.owner,
         team: { identifier: null, hasConsolidatedView: false }
       },
-      message: `Segment not found with with ID "202020"`,
+      message: `Segment not found with ID "202020"`,
       siteOptions: { siteSegmentsAvailable: true }
     }
   ]

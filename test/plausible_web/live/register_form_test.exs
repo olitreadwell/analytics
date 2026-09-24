@@ -254,7 +254,7 @@ defmodule PlausibleWeb.Live.RegisterFormTest do
       refute Repo.get_by(User, email: "mary.sue@plausible.test")
     end
 
-    test "redirects to expired invitation notice on on-existent invitation ID", %{conn: conn} do
+    test "redirects to expired invitation notice on non-existent invitation ID", %{conn: conn} do
       conn = assign(conn, :live_module, PlausibleWeb.Live.RegisterForm)
 
       assert {:error, {:redirect, %{to: "/invitation-expired"}}} =

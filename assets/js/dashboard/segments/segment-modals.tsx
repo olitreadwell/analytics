@@ -459,9 +459,9 @@ export const SegmentModal = ({ id }: { id: SavedSegment['id'] }) => {
 
   if (!segment) {
     error = new ApiError(
-      `Segment not found with with ID "${id}"`,
+      `Segment not found with ID "${id}"`,
       {
-        error: `Segment not found with with ID "${id}"`
+        error: `Segment not found with ID "${id}"`
       },
       404
     )

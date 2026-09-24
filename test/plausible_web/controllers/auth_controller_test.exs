@@ -359,7 +359,7 @@ defmodule PlausibleWeb.AuthControllerTest do
       # that it indeed generates a new code
       if verification.code == new_verification.code do
         Logger.warning(
-          "Congratulations! You you have hit 1 in 8999 chance of the same " <>
+          "Congratulations! You have hit 1 in 8999 chance of the same " <>
             "email verification code repeating twice in a row!"
         )
       end
