@@ -5,6 +5,10 @@ import {
   formatISO,
   now,
   parseNaiveDate,
+  formatDateRange,
+  isAfter,
+  isBefore,
+  isSameMonth,
   parseUTCDate,
   shiftMonths,
   yesterday
@@ -205,6 +209,129 @@ describe(formatTime.name, () => {
           includeMinutes: false
         })
       ).toEqual('09:00')
+    })
+  })
+})
+
+describe('date-range predicates', () => {
+  const d = (s: string) => parseNaiveDate(s)
+
+  describe('isBefore', () => {
+    it('is false for the same day regardless of period', () => {
+      expect(isBefore(d('2025-06-05'), d('2025-06-05'), 'day')).toBe(false)
+      expect(isBefore(d('2025-06-05'), d('2025-06-05'), 'month')).toBe(false)
+      expect(isBefore(d('2025-06-05'), d('2025-06-05'), 'year')).toBe(false)
+    })
+
+    it('compares days within the same month', () => {
+      expect(isBefore(d('2025-06-05'), d('2025-06-12'), 'day')).toBe(true)
+      expect(isBefore(d('2025-06-12'), d('2025-06-05'), 'day')).toBe(false)
+    })
+
+    it('compares months and returns false for a finer period', () => {
+      expect(isBefore(d('2025-03-20'), d('2025-06-05'), 'month')).toBe(true)
+      expect(isBefore(d('2025-06-05'), d('2025-03-20'), 'month')).toBe(false)
+      expect(isBefore(d('2025-03-20'), d('2025-06-05'), 'day')).toBe(true)
+    })
+
+    it('compares years and returns false for a finer period', () => {
+      expect(isBefore(d('2024-12-31'), d('2025-01-01'), 'year')).toBe(true)
+      expect(isBefore(d('2025-01-01'), d('2024-12-31'), 'year')).toBe(false)
+      expect(isBefore(d('2024-12-31'), d('2025-01-01'), 'month')).toBe(true)
+      expect(isBefore(d('2024-12-31'), d('2025-01-01'), 'day')).toBe(true)
+    })
+  })
+
+  describe('isAfter', () => {
+    it('is false for the same day regardless of period', () => {
+      expect(isAfter(d('2025-06-12'), d('2025-06-12'), 'day')).toBe(false)
+      expect(isAfter(d('2025-06-12'), d('2025-06-12'), 'month')).toBe(false)
+      expect(isAfter(d('2025-06-12'), d('2025-06-12'), 'year')).toBe(false)
+    })
+
+    it('compares days within the same month', () => {
+      expect(isAfter(d('2025-06-12'), d('2025-06-05'), 'day')).toBe(true)
+      expect(isAfter(d('2025-06-05'), d('2025-06-12'), 'day')).toBe(false)
+    })
+
+    it('compares months and returns false for a finer period', () => {
+      expect(isAfter(d('2025-06-05'), d('2025-03-20'), 'month')).toBe(true)
+      expect(isAfter(d('2025-03-20'), d('2025-06-05'), 'month')).toBe(false)
+      expect(isAfter(d('2025-06-05'), d('2025-03-20'), 'day')).toBe(true)
+    })
+
+    it('compares years and returns false for a finer period', () => {
+      expect(isAfter(d('2025-01-01'), d('2024-12-31'), 'year')).toBe(true)
+      expect(isAfter(d('2024-12-31'), d('2025-01-01'), 'year')).toBe(false)
+      expect(isAfter(d('2025-01-01'), d('2024-12-31'), 'month')).toBe(true)
+      expect(isAfter(d('2025-01-01'), d('2024-12-31'), 'day')).toBe(true)
+    })
+  })
+
+  describe('isSameMonth', () => {
+    it('returns true for dates in the same month', () => {
+      expect(isSameMonth(d('2025-06-01'), d('2025-06-30'))).toBe(true)
+    })
+
+    it('returns false for dates in different months', () => {
+      expect(isSameMonth(d('2025-06-15'), d('2025-07-15'))).toBe(false)
+    })
+  })
+
+  describe('formatDateRange', () => {
+    const site = { offset: 0 }
+
+    it('formats a single-day range', () => {
+      jest.setSystemTime(new Date('2025-06-01T00:00:00.000Z'))
+      expect(
+        formatDateRange(
+          site,
+          parseNaiveDate('2025-06-05'),
+          parseNaiveDate('2025-06-05')
+        )
+      ).toEqual('Thu, 05 Jun')
+    })
+
+    it('omits the year within the current year', () => {
+      jest.setSystemTime(new Date('2025-10-15T00:00:00.000Z'))
+      expect(
+        formatDateRange(
+          site,
+          parseNaiveDate('2025-11-01'),
+          parseNaiveDate('2025-11-30')
+        )
+      ).toEqual('1 Nov - 30 Nov')
+    })
+
+    it('includes the year in a previous year', () => {
+      jest.setSystemTime(new Date('2026-01-07T00:00:00.000Z'))
+      expect(
+        formatDateRange(
+          site,
+          parseNaiveDate('2025-11-01'),
+          parseNaiveDate('2025-11-30')
+        )
+      ).toEqual('1 Nov - 30 Nov 25')
+    })
+
+    it('includes the year in a cross-year range', () => {
+      jest.setSystemTime(new Date('2025-06-01T00:00:00.000Z'))
+      expect(
+        formatDateRange(
+          site,
+          parseNaiveDate('2024-12-31'),
+          parseNaiveDate('2025-01-02')
+        )
+      ).toEqual('31 Dec 24 - 2 Jan 25')
+    })
+
+    it('returns undefined when either end is missing', () => {
+      expect(
+        formatDateRange(site, null, parseNaiveDate('2025-06-05'))
+      ).toBeUndefined()
+      expect(
+        formatDateRange(site, parseNaiveDate('2025-06-05'), null)
+      ).toBeUndefined()
     })
   })
 })
