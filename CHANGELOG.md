@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Keybind hints are hidden on smaller screens
+- Prevent Mobile Safari auto-zooming into focused text inputs by raising their font size to 16px
 - Site index is sortable alphanumerically and by traffic
 - "Top referrers" and "Search terms" breakdowns are rendered side by side with other "Sources" tabs instead of replacing them
 - Improved top bar and top stats UI/styling
