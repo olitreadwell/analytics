@@ -3,7 +3,7 @@ defmodule Plausible.Stats.SQL.Expression do
   This module is responsible for generating SQL/Ecto expressions
   for dimensions and metrics used in query SELECT statement.
 
-  Each dimension and metric is tagged with with selected_as for easier
+  Each dimension and metric is tagged with selected_as for easier
   usage down the line.
   """
 
