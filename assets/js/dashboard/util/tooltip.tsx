@@ -55,6 +55,8 @@ export function Tooltip({
         ref={setReferenceElement}
         onMouseEnter={() => setVisible(true)}
         onMouseLeave={() => setVisible(false)}
+        onFocus={() => setVisible(true)}
+        onBlur={() => setVisible(false)}
         onClick={onClick}
       >
         {children}
