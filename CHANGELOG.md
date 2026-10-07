@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Tooltips are now shown when their trigger is focused with the keyboard
 - Keybind hints are hidden on smaller screens
 - Site index is sortable alphanumerically and by traffic
 - "Top referrers" and "Search terms" breakdowns are rendered side by side with other "Sources" tabs instead of replacing them
