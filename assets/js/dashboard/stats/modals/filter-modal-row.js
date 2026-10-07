@@ -99,13 +99,14 @@ export default function FilterModalRow({
       </div>
       {showDelete && (
         <div className="col-span-1 flex flex-col mt-2">
-          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-          <a
+          <button
+            type="button"
+            aria-label="Remove filter"
             className="ml-2 text-red-600 h-5 w-5 cursor-pointer"
             onClick={onDelete}
           >
             <TrashIcon />
-          </a>
+          </button>
         </div>
       )}
     </div>
