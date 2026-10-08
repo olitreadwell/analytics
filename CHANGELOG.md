@@ -64,6 +64,7 @@ All notable changes to this project will be documented in this file.
 - Fixed period arrow keys hijacking custom-range calendar
 - Fixed dashboard CSV export failing when the dashboard is filtered by entry page or exit page
 - Fixed entry page hostname breakdown crashing when revenue metrics are queried
+- Fixed brand new sites not defaulting to "Today" for users in non-UTC timezones
 
 ## v3.2.0 - 2026-01-16
 
