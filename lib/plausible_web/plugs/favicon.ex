@@ -9,7 +9,7 @@ defmodule PlausibleWeb.Favicon do
   connections on the website for privacy reasons.
 
   This module also maps between categorized sources and their respective URLs for favicons.
-  What does that mean exactly? During ingestion we use `PlausibleWeb.RefInspector.parse/1` to
+  What does that mean exactly? During ingestion we use `RefInspector.parse/1` to
   categorize our referrer sources like so:
 
   google.com -> Google
@@ -17,7 +17,7 @@ defmodule PlausibleWeb.Favicon do
   google.com.au -> Google
 
   So when we show Google as a source in the dashboard, the request to this plug will come as:
-  https://plausible/io/favicon/sources/Google
+  https://plausible.io/favicon/sources/Google
 
   Now, when we want to show a favicon for Google, we need to convert Google -> google.com or
   some other hostname owned by Google:
