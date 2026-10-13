@@ -44,7 +44,7 @@ defmodule Plausible.InstallationSupport.Checks.Url do
     end
   end
 
-  # Check A records of the the domains [domain, "www.#{domain}"]
+  # Check A records of the domains [domain, "www.#{domain}"]
   # at this point, domain can contain path
   @spec find_working_url(String.t()) :: {:ok, String.t()} | {:error, :domain_not_found}
   defp find_working_url(domain) do

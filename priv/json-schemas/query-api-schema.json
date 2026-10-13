@@ -57,7 +57,7 @@
         "total_rows": {
           "type": "boolean",
           "default": false,
-          "description": "If set, returns the total number of result rows rows before pagination under `meta.total_rows`"
+          "description": "If set, returns the total number of result rows before pagination under `meta.total_rows`"
         },
         "trim_relative_date_range": {
           "type": "boolean",

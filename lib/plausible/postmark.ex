@@ -59,7 +59,7 @@ defmodule Plausible.Postmark do
     end
   end
 
-  # Potsmark limit
+  # Postmark limit
   @delete_chunk_size 50
 
   @doc """

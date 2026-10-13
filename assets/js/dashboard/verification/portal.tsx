@@ -13,7 +13,7 @@ export const VERIFICATION_FINISHED_EVENT = 'verification-finished'
 
 /**
  * Renders the portal target into which the verification LiveView (see
- * lib/plausible_web/live/components/verification.ex) gets teleported.
+ * extra/lib/plausible_web/live/verification.ex) gets teleported.
  * Also helps that LiveView out with cleaning up after itself: clearing
  * its one-time query params through React Router.
  */

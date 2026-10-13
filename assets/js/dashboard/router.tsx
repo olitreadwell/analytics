@@ -268,7 +268,7 @@ export function createAppRouter(site: PlausibleSite) {
     {
       basename: basepath,
       future: {
-        // @ts-expect-error valid according to docs (https://reactrouter.com/en/main/routers/create-browser-router#optsfuture)
+        // @ts-expect-error valid according to docs (https://reactrouter.com/6.30.6/routers/create-browser-router#optsfuture)
         v7_prependBasename: true
       }
     }
