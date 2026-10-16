@@ -121,8 +121,8 @@ export function isToday(site, date) {
 }
 
 export function isTodayOrYesterday(isoDate) {
-  const isoToday = formatISO(dayjs())
-  const isoYesterday = formatISO(dayjs().subtract(1, 'day'))
+  const isoToday = formatISO(utcNow())
+  const isoYesterday = formatISO(utcNow().subtract(1, 'day'))
   return isoDate === isoToday || isoDate === isoYesterday
 }
 
