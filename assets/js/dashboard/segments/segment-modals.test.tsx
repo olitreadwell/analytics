@@ -39,6 +39,10 @@ describe('Segment details modal - errors', () => {
     type: SegmentType.personal
   }
 
+beforeAll(() => {
+  mockAPI = new MockAPI().start()
+})
+
   const cases: {
     case: string
     segments: SavedSegments

@@ -172,14 +172,37 @@ defmodule PlausibleWeb.Live.CustomerSupport.TeamsTest do
 
         assert text(html) =~ "Deletion scheduled"
 
+        future_date = Date.utc_today() |> Date.add(30) |> Date.to_iso8601()
+
         lv
         |> element(~s|form[phx-submit="save-team"]|)
-        |> render_submit(%{"team" => %{"trial_expiry_date" => "2029-01-01"}})
+        |> render_submit(%{"team" => %{"trial_expiry_date" => future_date}})
 
         html = render(lv)
         refute text(html) =~ "Deletion scheduled"
 
         assert Plausible.Repo.reload!(schedule).status == :cancelled
+      end
+
+      test "prolonging an expired trial unlocks the team straight away", %{conn: conn, user: user} do
+        team =
+          user
+          |> team_of()
+          |> Ecto.Changeset.change(trial_expiry_date: Date.shift(Date.utc_today(), day: -10))
+          |> Plausible.Repo.update!()
+
+        Plausible.Billing.SiteLocker.update_for(team, send_email?: false)
+        assert Plausible.Repo.reload!(team).locked
+
+        {:ok, lv, _html} = live(conn, open_team(team.id))
+
+        future_date = Date.utc_today() |> Date.add(30) |> Date.to_iso8601()
+
+        lv
+        |> element(~s|form[phx-submit="save-team"]|)
+        |> render_submit(%{"team" => %{"trial_expiry_date" => future_date}})
+
+        refute Plausible.Repo.reload!(team).locked
       end
 
       test "404", %{conn: conn} do
@@ -313,6 +336,25 @@ defmodule PlausibleWeb.Live.CustomerSupport.TeamsTest do
     end
 
     describe "members" do
+      test "lists members linking to their user page, and pending invitations without a link",
+           %{conn: conn, user: user} do
+        team = team_of(user)
+        member = add_member(team, user: new_user(email: "member@example.com"), role: :editor)
+        invite_member(team, "invitee@example.com", role: :viewer, inviter: user)
+
+        {:ok, _lv, html} = live(conn, open_team(team.id, tab: "members"))
+
+        assert text_of_element(html, ~s|a[href="#{~p"/cs/users/user/#{member.id}"}"]|) =~
+                 "member@example.com"
+
+        rows = html |> find("tbody tr") |> Enum.map(&text/1)
+
+        assert Enum.any?(rows, &(&1 =~ "member@example.com" and &1 =~ "membership"))
+        assert Enum.any?(rows, &(&1 =~ "invitee@example.com" and &1 =~ "invitation"))
+
+        refute html |> find("tbody a") |> text() =~ "invitee@example.com"
+      end
+
       test "shows no suppression warning for a member whose e-mail isn't suppressed", %{
         conn: conn,
         user: user

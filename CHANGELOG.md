@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Add "Last 24 Hours" to dashboard time range picker and Stats API v2
 - Always compare against the same time range in comparisons with "Today"
 - Added vertical indicator line to graph to make it easier to see what's hovered / selected
+- Added light-mode support to tooltips
 
 ### Removed
 
@@ -44,6 +45,7 @@ All notable changes to this project will be documented in this file.
 - Moved tracking options (outbound links, file downloads, form submissions) from the installation page to the general site settings, where they can be toggled without going through the installation flow
 - Replaced HCaptcha with Friendly Captcha
 - Team names are now limited to 50 characters and cannot contain URLs with an explicit scheme (e.g. `https://`)
+- Replaced the options menu on site cards with individual Settings and Pin/Unpin buttons that appear on hover
 
 ### Fixed
 
@@ -63,6 +65,7 @@ All notable changes to this project will be documented in this file.
 - Fixed period arrow keys hijacking custom-range calendar
 - Fixed dashboard CSV export failing when the dashboard is filtered by entry page or exit page
 - Fixed entry page hostname breakdown crashing when revenue metrics are queried
+- Fixed brand new sites not defaulting to "Today" for users in non-UTC timezones
 
 ## v3.2.0 - 2026-01-16
 
