@@ -142,11 +142,11 @@ Pages
 to the Plausible frontend.</p><p>The proxying is there so we can reduce the number of third-party domains that
 the browser clients need to connect to. Our goal is to have 0 third-party domain
 connections on the website for privacy reasons.</p><p>This module also maps between categorized sources and their respective URLs for favicons.
-What does that mean exactly? During ingestion we use <code class="inline">PlausibleWeb.RefInspector.parse/1</code> to
+What does that mean exactly? During ingestion we use <a href="https://hexdocs.pm/ref_inspector/2.0.0/RefInspector.html#parse/1"><code class="inline">RefInspector.parse/1</code></a> to
 categorize our referrer sources like so:</p><p>google.com -&gt; Google
 google.co.uk -&gt; Google
 google.com.au -&gt; Google</p><p>So when we show Google as a source in the dashboard, the request to this plug will come as:
-<a href="https://plausible/io/favicon/sources/Google">https://plausible/io/favicon/sources/Google</a></p><p>Now, when we want to show a favicon for Google, we need to convert Google -&gt; google.com or
+<a href="https://plausible.io/favicon/sources/Google">https://plausible.io/favicon/sources/Google</a></p><p>Now, when we want to show a favicon for Google, we need to convert Google -&gt; google.com or
 some other hostname owned by Google:
 <a href="https://icons.duckduckgo.com/ip3/google.com.ico">https://icons.duckduckgo.com/ip3/google.com.ico</a></p><p>The mapping from source category -&gt; source hostname is stored in &quot;priv/referer_favicon_domains.json&quot; and
 managed by <code class="inline">Mix.Tasks.GenerateReferrerFavicons.run/1</code></p>
