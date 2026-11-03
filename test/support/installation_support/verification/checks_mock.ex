@@ -1,7 +1,7 @@
 # This file lives under `test/support` (rather than `extra/lib`, alongside
 # the rest of the EE-only installation-support code it depends on -
 # `Diagnostics`, `State`, `CheckRunner`, `Checks`, `Check`) so it's available
-# in the `:dev` env too - see `Plausible.InstallationSupport.MockScenarios`
+# in the `:dev` env too - see `Plausible.InstallationSupport.Verification.MockScenarios`
 # and `ChecksMock`'s moduledocs. `test/support` also compiles under
 # `:ce_test`/`:ce_dev`, where none of those EE-only dependencies exist, so
 # both modules are wrapped in a single `on_ee` block - under CE builds,

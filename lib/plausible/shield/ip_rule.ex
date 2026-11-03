@@ -15,7 +15,7 @@ defmodule Plausible.Shield.IPRule do
     field :description, :string
     field :added_by, :string
 
-    # If `from_cache?` is set, the struct might be incomplete - see `Plausible.Site.Shield.Rules.IP.Cache`
+    # If `from_cache?` is set, the struct might be incomplete - see `Plausible.Shield.IPRuleCache`
     field :from_cache?, :boolean, virtual: true, default: false
     timestamps()
   end
