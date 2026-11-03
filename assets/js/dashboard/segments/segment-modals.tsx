@@ -5,16 +5,30 @@ import {
   SaveButton
 } from '../components/modal-layout'
 import {
+  canRemoveFilter,
+  getSearchToRemoveSegmentFilter,
+  canExpandSegment,
   SavedSegment,
   SEGMENT_TYPE_LABELS,
+  SegmentData,
   SegmentType
 } from '../filtering/segments'
+import {
+  AppNavigationLink,
+  useAppNavigate
+} from '../navigation/use-app-navigate'
+import { plainFilterText, styledFilterText } from '../util/filter-text'
+import { rootRoute } from '../router'
+import { FilterPillsList } from '../nav-menu/filter-pills-list'
+import classNames from 'classnames'
+import { SegmentAuthorship } from './segment-authorship'
 import { MutationStatus, useQuery } from '@tanstack/react-query'
 import { ApiError, get } from '../api'
 import { ErrorPanel } from '../components/error-panel'
-import { Role, UserContextValue } from '../user-context'
+import { useSegmentsContext } from '../filtering/segments-context'
+import { Role, UserContextValue, useUserContext } from '../user-context'
 import { useSiteContext } from '../site-context'
-import { Button } from '../components/button'
+import { Button, buttonClassName } from '../components/button'
 import {
   Checkbox,
   getOptionDisabledMessage,
@@ -22,7 +36,10 @@ import {
   OptionDisabledMessageType,
   TypeSelector
 } from '../components/form-elements'
+import { Placeholder } from '../components/placeholder'
 import { UpgradePill } from '../components/pill'
+
+const inModalSectionLabelClassName = 'text-sm font-semibold dark:text-gray-100'
 
 const nameInputProps = { id: 'name', label: 'Segment name' }
 
@@ -36,6 +53,7 @@ interface SegmentModalProps {
   user: UserContextValue
   siteSegmentsAvailable: boolean
   onClose: () => void
+  namePlaceholder: string
 }
 
 export const CreateSegmentModal = ({
@@ -44,19 +62,18 @@ export const CreateSegmentModal = ({
   onSave,
   siteSegmentsAvailable: siteSegmentsAvailable,
   user,
-  suggestedName,
+  namePlaceholder,
   error,
   reset,
   status
 }: SegmentModalProps &
   ApiRequestProps & {
     segment?: SavedSegment
-    suggestedName: string
     onSave: (input: Pick<SavedSegment, 'name' | 'type'>) => void
   }) => {
   const defaultName = segment?.name
     ? `Copy of ${segment.name}`.slice(0, 255)
-    : suggestedName
+    : ''
   const [name, setName] = useState(defaultName)
   const defaultType =
     segment?.type === SegmentType.site &&
@@ -79,10 +96,9 @@ export const CreateSegmentModal = ({
     <ModalLayout title="Create segment" onClose={onClose}>
       <LabeledTextInput
         {...nameInputProps}
-        focusOnMount
         value={name}
         onChange={setName}
-        placeholder={suggestedName}
+        placeholder={namePlaceholder}
       />
       <SegmentTypeSelector
         type={type}
@@ -99,7 +115,7 @@ export const CreateSegmentModal = ({
             const trimmedName = name.trim()
             const saveableName = trimmedName.length
               ? trimmedName
-              : suggestedName
+              : namePlaceholder
             onSave({ name: saveableName, type })
           }}
         />
@@ -119,17 +135,10 @@ export const CreateSegmentModal = ({
   )
 }
 
-function getDeleteNotice(segment: SavedSegment, links: string[]) {
-  if (links.length === 1) {
-    return 'This segment is used by a shared link. To delete the segment, this link must also be deleted:'
-  }
-  if (links.length > 1) {
-    return `This segment is used by ${links.length} shared links. To delete the segment, these links must also be deleted:`
-  }
-  if (segment.type === SegmentType.site) {
-    return 'This site segment will be removed for everyone with access to this dashboard. Are you sure?'
-  }
-  return 'Are you sure?'
+function getLinksDeleteNotice(links: string[]) {
+  return links.length === 1
+    ? 'This segment is used in a shared link. To delete it, you also need to delete the shared link.'
+    : `This segment is used in ${links.length} shared links. To delete it, you also need to delete the shared links.`
 }
 
 export const DeleteSegmentModal = ({
@@ -142,7 +151,7 @@ export const DeleteSegmentModal = ({
 }: {
   onClose: () => void
   onSave: (input: Pick<SavedSegment, 'id'>) => void
-  segment: SavedSegment
+  segment: SavedSegment & { segment_data?: SegmentData }
 } & ApiRequestProps) => {
   const site = useSiteContext()
   const [confirmed, setConfirmed] = useState(false)
@@ -157,55 +166,58 @@ export const DeleteSegmentModal = ({
     }
   })
 
-  const links = linksQuery.data ?? []
   const deleteDisabled =
     status === 'pending' ||
     linksQuery.status !== 'success' ||
-    (!!links.length && !confirmed)
+    (!!linksQuery.data?.length && !confirmed)
 
   return (
     <ModalLayout
       title={`Delete ${SEGMENT_TYPE_LABELS[segment.type].toLowerCase()}`}
       onClose={onClose}
     >
-      <p className="text-sm dark:text-gray-100">
-        {`You’re about to delete `}
-        <span className="break-all font-semibold">{`“${segment.name}”`}</span>
-        {'. '}
-        {linksQuery.status === 'success' && getDeleteNotice(segment, links)}
-      </p>
-      {linksQuery.status === 'pending' && (
-        <div className="loading sm">
-          <div />
-        </div>
-      )}
-      {linksQuery.status === 'error' && (
-        <ErrorPanel
-          errorMessage="Error loading related shared links"
-          onRetry={linksQuery.refetch}
+      <div className="flex flex-col gap-y-2">
+        <p className="text-sm dark:text-gray-100">
+          {`You're about to delete `}
+          <span className="break-all font-semibold">{`"${segment.name}"`}</span>
+          {`. Are you sure?`}
+        </p>
+        {linksQuery.status === 'pending' && (
+          <div className="loading sm">
+            <div />
+          </div>
+        )}
+        {linksQuery.status === 'success' && !!linksQuery.data?.length && (
+          <ErrorPanel
+            errorMessage={
+              <span className="break-normal">
+                {getLinksDeleteNotice(linksQuery.data)}
+              </span>
+            }
+          />
+        )}
+        {linksQuery.status === 'error' && (
+          <ErrorPanel
+            errorMessage="Error loading related shared links"
+            onRetry={linksQuery.refetch}
+          />
+        )}
+      </div>
+      {!!segment.segment_data && (
+        <FiltersInSegment
+          segment_data={segment.segment_data}
+          className={linksQuery.data?.length ? undefined : 'mb-4'}
         />
       )}
-      {!!links.length && (
+      {!!linksQuery.data?.length && (
         <>
-          <div className="flex flex-col items-start gap-y-1 text-sm">
-            {links.map((name, index) => (
-              <a
-                key={index}
-                href={`/${encodeURIComponent(site.domain)}/settings/visibility`}
-                className="break-words text-indigo-600 hover:text-indigo-700 dark:text-indigo-500 dark:hover:text-indigo-400"
-              >
-                {name}
-              </a>
-            ))}
-          </div>
+          <RelatedSharedLinks sharedLinks={linksQuery.data} />
           <Checkbox
             id="confirm"
             checked={confirmed}
             onChange={(e) => setConfirmed(e.currentTarget.checked)}
           >
-            {links.length === 1
-              ? 'Also delete this shared link'
-              : `Also delete these ${links.length} shared links`}
+            Yes, delete the associated shared links
           </Checkbox>
         </>
       )}
@@ -225,11 +237,7 @@ export const DeleteSegmentModal = ({
                 }
           }
         >
-          {links.length === 0
-            ? 'Delete'
-            : links.length === 1
-              ? 'Delete segment and link'
-              : 'Delete segment and links'}
+          Delete
         </Button>
       </ModalFooter>
       {error !== null && (
@@ -244,6 +252,24 @@ export const DeleteSegmentModal = ({
         />
       )}
     </ModalLayout>
+  )
+}
+
+const RelatedSharedLinks = ({ sharedLinks }: { sharedLinks: string[] }) => {
+  return (
+    <div className="flex flex-col gap-y-2">
+      <p className={inModalSectionLabelClassName}>Shared links</p>
+      <FilterPillsList
+        className="flex-wrap"
+        direction="horizontal"
+        pills={sharedLinks.map((name) => ({
+          className: 'dark:!shadow-gray-950/60',
+          plainText: name,
+          children: name,
+          interactive: false
+        }))}
+      />
+    </div>
   )
 }
 
@@ -335,7 +361,6 @@ export const UpdateSegmentModal = ({
   reset
 }: SegmentModalProps &
   ApiRequestProps & {
-    namePlaceholder: string
     onSave: (input: Pick<SavedSegment, 'id' | 'name' | 'type'>) => void
     segment: SavedSegment
   }) => {
@@ -354,7 +379,6 @@ export const UpdateSegmentModal = ({
     <ModalLayout title="Update segment" onClose={onClose}>
       <LabeledTextInput
         {...nameInputProps}
-        focusOnMount
         value={name}
         onChange={setName}
         placeholder={namePlaceholder}
@@ -394,8 +418,144 @@ export const UpdateSegmentModal = ({
   )
 }
 
+const FiltersInSegment = ({
+  segment_data,
+  className
+}: {
+  segment_data: SegmentData
+  className?: string
+}) => {
+  return (
+    <div className={classNames('flex flex-col gap-y-2', className)}>
+      <p className={inModalSectionLabelClassName}>Filters in segment</p>
+      <FilterPillsList
+        className="flex-wrap"
+        direction="horizontal"
+        pills={segment_data.filters.map((filter) => ({
+          className: 'dark:!shadow-gray-950/60',
+          plainText: plainFilterText({ labels: segment_data.labels }, filter),
+          children: styledFilterText({ labels: segment_data.labels }, filter),
+          interactive: false
+        }))}
+      />
+    </div>
+  )
+}
+
 const hasSiteSegmentPermission = (user: UserContextValue) => {
   return [Role.admin, Role.owner, Role.editor, 'super_admin'].includes(
     user.role
+  )
+}
+
+export const SegmentModal = ({ id }: { id: SavedSegment['id'] }) => {
+  const user = useUserContext()
+  const { segments, limitedToSegment } = useSegmentsContext()
+  const navigate = useAppNavigate()
+
+  const segment = segments.find((s) => String(s.id) === String(id))
+
+  let error: ApiError | null = null
+
+  if (!segment) {
+    error = new ApiError(
+      `Segment not found with ID "${id}"`,
+      {
+        error: `Segment not found with ID "${id}"`
+      },
+      404
+    )
+  }
+
+  const data = !error ? segment : null
+
+  const showClearButton = canRemoveFilter(
+    ['is', 'segment', [id]],
+    limitedToSegment
+  )
+
+  const onClose = () => navigate({ path: rootRoute.path, search: (s) => s })
+
+  return (
+    <ModalLayout title="Segment details" onClose={onClose}>
+      <div className="flex flex-col gap-y-6 dark:text-gray-100">
+        <div className="text-sm flex flex-col gap-y-0.5">
+          <h2 className="font-semibold break-all">
+            <Placeholder placeholder="Segment name">
+              {data?.name ?? false}
+            </Placeholder>
+          </h2>
+          <div className="text-gray-500 dark:text-gray-400">
+            <Placeholder placeholder="Segment type">
+              {data?.segment_data ? SEGMENT_TYPE_LABELS[data.type] : false}
+            </Placeholder>
+            {!!data?.segment_data && (
+              <>
+                {' • '}
+                <SegmentAuthorship
+                  segment={data}
+                  showOnlyPublicData={
+                    !user.loggedIn || user.role === Role.public
+                  }
+                />
+              </>
+            )}
+          </div>
+        </div>
+        {!!data?.segment_data && (
+          <>
+            <FiltersInSegment
+              segment_data={data.segment_data}
+              className="mb-4"
+            />
+
+            <ModalFooter>
+              {showClearButton && (
+                <Button
+                  theme="secondary"
+                  size="sm"
+                  onClick={() =>
+                    navigate({
+                      path: rootRoute.path,
+                      search: getSearchToRemoveSegmentFilter()
+                    })
+                  }
+                >
+                  Remove filter
+                </Button>
+              )}
+
+              {canExpandSegment({ segment: data, user }) && (
+                <AppNavigationLink
+                  className={buttonClassName({ size: 'sm' })}
+                  path={rootRoute.path}
+                  search={(s) => ({
+                    ...s,
+                    filters: data.segment_data.filters,
+                    labels: data.segment_data.labels
+                  })}
+                  state={{
+                    expandedSegment: data
+                  }}
+                >
+                  Edit segment
+                </AppNavigationLink>
+              )}
+            </ModalFooter>
+          </>
+        )}
+        {error !== null && (
+          <ErrorPanel
+            className="mt-4"
+            errorMessage={
+              error instanceof ApiError
+                ? error.message
+                : 'Something went wrong loading segment'
+            }
+            onRetry={() => window.location.reload()}
+          />
+        )}
+      </div>
+    </ModalLayout>
   )
 }

@@ -121,7 +121,7 @@ defmodule PlausibleWeb.BillingController do
               "Unable to subscribe to this plan because the following limits are exceeded: #{PlausibleWeb.TextHelpers.pretty_list(exceeded_limits)}"
 
             %{"code" => 147} ->
-              # https://developer.paddle.com/api-reference/intro/api-error-codes
+              # https://developer.paddle.com/api-reference/about/errors
               "We were unable to charge your card. Click 'update billing info' to update your payment details and try again."
 
             %{"message" => msg} when not is_nil(msg) ->

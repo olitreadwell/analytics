@@ -14,7 +14,7 @@ defmodule Plausible.Shield.CountryRule do
     field :action, Ecto.Enum, values: [:deny, :allow], default: :deny
     field :added_by, :string
 
-    # If `from_cache?` is set, the struct might be incomplete - see `Plausible.Site.Shield.Rules.Country.Cache`
+    # If `from_cache?` is set, the struct might be incomplete - see `Plausible.Shield.CountryRuleCache`
     field :from_cache?, :boolean, virtual: true, default: false
     timestamps()
   end
