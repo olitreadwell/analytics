@@ -45,6 +45,12 @@ defmodule PlausibleWeb.SiteControllerTest do
       refute html_response(conn, 200) =~ ~s(id="flow-progress")
     end
 
+    test "skip link continues to the team setup onboarding step", %{conn: conn} do
+      conn = get(conn, "/sites/new?flow=register")
+
+      assert html_response(conn, 200) =~ ~s(href="/team/setup?flow=register")
+    end
+
     test "does not display limit notice when user is on an enterprise plan", %{
       conn: conn,
       user: user
@@ -232,12 +238,12 @@ defmodule PlausibleWeb.SiteControllerTest do
 
       assert element_exists?(
                resp,
-               ~s|a[href="#{Routes.settings_path(conn, :subscription)}"]|
+               ~s|a[href="#{~p"/settings/billing/subscription"}"]|
              )
 
       assert text_of_element(
                resp,
-               ~s|a[href="#{Routes.settings_path(conn, :subscription)}"]|
+               ~s|a[href="#{~p"/settings/billing/subscription"}"]|
              ) =~ "Choose a plan"
     end
 
@@ -253,7 +259,7 @@ defmodule PlausibleWeb.SiteControllerTest do
 
       assert element_exists?(
                resp,
-               ~s|a[href="#{Routes.settings_path(conn, :subscription)}"]|
+               ~s|a[href="#{~p"/settings/billing/subscription"}"]|
              )
     end
 
@@ -274,7 +280,7 @@ defmodule PlausibleWeb.SiteControllerTest do
 
       assert element_exists?(
                resp,
-               ~s|a[href="#{Routes.settings_path(conn, :subscription)}"]|
+               ~s|a[href="#{~p"/settings/billing/subscription"}"]|
              )
     end
 
@@ -294,7 +300,7 @@ defmodule PlausibleWeb.SiteControllerTest do
 
         refute element_exists?(
                  resp,
-                 ~s|a[href="#{Routes.settings_path(conn, :subscription)}"]|
+                 ~s|a[href="#{~p"/settings/billing/subscription"}"]|
                ),
                "expected no upgrade link for role #{role}"
       end
@@ -359,6 +365,30 @@ defmodule PlausibleWeb.SiteControllerTest do
 
   describe "POST /sites" do
     setup [:create_user, :log_in]
+
+    test "continues to the team setup step in the onboarding flow", %{conn: conn} do
+      conn =
+        post(conn, "/sites?flow=register", %{
+          "site" => %{
+            "domain" => "example.com",
+            "timezone" => "Europe/London"
+          }
+        })
+
+      assert redirected_to(conn) == "/team/setup?flow=register&domain=example.com"
+    end
+
+    test "continues to the installation step in the provisioning flow", %{conn: conn} do
+      conn =
+        post(conn, "/sites?flow=provisioning", %{
+          "site" => %{
+            "domain" => "example.com",
+            "timezone" => "Europe/London"
+          }
+        })
+
+      assert redirected_to(conn) == "/example.com/installation?flow=provisioning"
+    end
 
     test "creates the site with valid params", %{conn: conn} do
       conn =
@@ -679,22 +709,20 @@ defmodule PlausibleWeb.SiteControllerTest do
     setup_patch_env(:google, client_id: "some", api_url: "https://www.googleapis.com")
 
     test "shows settings form", %{conn: conn, site: site} do
-      conn = get(conn, Routes.site_path(conn, :settings_general, site.domain))
+      conn = get(conn, ~p"/#{site.domain}/settings/general")
       resp = html_response(conn, 200)
 
       assert resp =~ "Settings for #{site.domain}"
       assert resp =~ "Site details"
       assert resp =~ "Site domain"
-      assert resp =~ Routes.site_path(conn, :change_domain, site.domain)
+      assert resp =~ ~p"/#{site.domain}/change-domain"
 
       assert resp =~ "Reporting timezone"
 
       assert resp =~ "Tracking"
 
       assert resp =~
-               Routes.site_path(conn, :installation, site.domain,
-                 flow: PlausibleWeb.Flows.review()
-               )
+               ~p"/#{site.domain}/installation?#{[flow: PlausibleWeb.Flows.review()]}"
     end
 
     on_ee do
@@ -1733,6 +1761,27 @@ defmodule PlausibleWeb.SiteControllerTest do
 
         assert notification.threshold == 15
       end
+
+      test "does not allow changing site_id or type of #{type} notification", %{
+        conn: conn,
+        site: site
+      } do
+        other_site = new_site()
+        notification = insert(:"#{unquote(type)}_notification", site: site)
+        other_type = if unquote(type) == :spike, do: "drop", else: "spike"
+
+        put(conn, "/sites/#{site.domain}/traffic-change-notification/#{unquote(type)}", %{
+          "traffic_change_notification" => %{
+            "site_id" => to_string(other_site.id),
+            "type" => other_type
+          }
+        })
+
+        notification = Repo.reload!(notification)
+
+        assert notification.site_id == site.id
+        assert notification.type == unquote(type)
+      end
     end
 
     describe "POST /sites/:domain/traffic-change-notification/#{type}/recipients" do
@@ -1935,7 +1984,7 @@ defmodule PlausibleWeb.SiteControllerTest do
       Plausible.Site.set_stats_start_date(site, ~D[2023-01-01])
       |> Repo.update!()
 
-      delete(conn, Routes.site_path(conn, :reset_stats, site.domain))
+      delete(conn, ~p"/#{site.domain}/stats")
 
       assert Repo.reload(site).stats_start_date == nil
     end
@@ -1945,7 +1994,7 @@ defmodule PlausibleWeb.SiteControllerTest do
     setup [:create_user, :log_in, :create_site]
 
     test "renders the transfer tile", %{conn: conn, site: site} do
-      conn = get(conn, Routes.site_path(conn, :settings_danger_zone, site.domain))
+      conn = get(conn, ~p"/#{site.domain}/settings/danger-zone")
       html = html_response(conn, 200)
       assert html =~ "Danger zone"
       assert html =~ "Transfer site"

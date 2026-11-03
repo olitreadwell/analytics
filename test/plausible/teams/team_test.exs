@@ -8,6 +8,9 @@ defmodule Plausible.Teams.TeamTest do
   @too_many_bytes_error {"should be at most %{count} byte(s)",
                          [count: 255, validation: :length, kind: :max, type: :binary]}
   @url_error {"cannot contain a URL", []}
+  @reserved_name Plausible.Teams.default_name()
+  @reserved_error {"is reserved", [validation: :exclusion, enum: [@reserved_name]]}
+  @blank_error {"can't be blank", [validation: :required]}
 
   describe "name_changeset/2" do
     test "accepts a name at exactly the limit" do
@@ -56,6 +59,32 @@ defmodule Plausible.Teams.TeamTest do
         assert Team.name_changeset(%Team{}, %{name: name}).errors == [],
                "expected #{inspect(name)} to be accepted"
       end
+    end
+
+    test "rejects the reserved default name" do
+      assert Team.name_changeset(%Team{}, %{name: @reserved_name}).errors == [
+               name: @reserved_error
+             ]
+    end
+
+    test "rejects the reserved default name even when resubmitted unchanged" do
+      team = %Team{name: @reserved_name}
+
+      assert Team.name_changeset(team, %{name: @reserved_name}).errors == [
+               name: @reserved_error
+             ]
+    end
+
+    test "does not double-flag a blank submission as both blank and reserved" do
+      team = %Team{name: @reserved_name}
+
+      assert Team.name_changeset(team, %{name: ""}).errors == [name: @blank_error]
+    end
+
+    test "accepts renaming away from the reserved default name" do
+      team = %Team{name: @reserved_name}
+
+      assert Team.name_changeset(team, %{name: "Real Team"}).errors == []
     end
   end
 
@@ -156,6 +185,46 @@ defmodule Plausible.Teams.TeamTest do
         assert Team.name_changeset(%Team{}, %{name: suggested}).errors == [],
                "expected #{inspect(suggested)} to be accepted"
       end
+    end
+  end
+
+  describe "suggested_name_from_domain/2" do
+    test "uses the label right before the public suffix" do
+      for {domain, expected} <- [
+            {"delfi.ee", "Delfi"},
+            {"subdomain.example.com", "Example"},
+            {"shop.bbc.co.uk", "Bbc"},
+            {"пример.рф", "Пример"}
+          ] do
+        assert Team.suggested_name_from_domain(domain, "Jane") == expected
+      end
+    end
+
+    test "ignores the path" do
+      assert Team.suggested_name_from_domain("mysite.com/mypage", "Jane") == "Mysite"
+      assert Team.suggested_name_from_domain("sub.mysite.com/mypage", "Jane") == "Mysite"
+    end
+
+    test "uses the subdomain of a hosting platform" do
+      assert Team.suggested_name_from_domain("foo.github.io", "Jane") == "Foo"
+      assert Team.suggested_name_from_domain("myapp.vercel.app", "Jane") == "Myapp"
+    end
+
+    test "turns dashes and underscores into capitalized words" do
+      assert Team.suggested_name_from_domain("my-cool_site.com", "Jane") == "My Cool Site"
+    end
+
+    test "falls back to the user name when the domain doesn't yield a name-like label" do
+      for domain <- ["lol", "localhost", "127.0.0.1", "0.1.1", "123.com", "_.com", "", nil] do
+        assert Team.suggested_name_from_domain(domain, "Jane") == "Jane's team",
+               "expected #{inspect(domain)} to fall back"
+      end
+    end
+
+    test "falls back to the user name when the label is too long for a team name" do
+      domain = String.duplicate("a", 51) <> ".com"
+
+      assert Team.suggested_name_from_domain(domain, "Jane") == "Jane's team"
     end
   end
 end

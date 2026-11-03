@@ -42,7 +42,11 @@ defmodule PlausibleWeb.Layouts do
           my_team={@my_team}
         />
 
-        <.team_notices :if={@global_notices?} current_team={@current_team} />
+        <.team_notices
+          :if={@global_notices?}
+          current_team={@current_team}
+          current_team_role={@current_team_role}
+        />
       <% end %>
 
       <main class="flex-1 flex flex-col">
@@ -53,17 +57,17 @@ defmodule PlausibleWeb.Layouts do
         <div data-iframe-height></div>
         <script
           type="text/javascript"
-          src={Routes.static_path(PlausibleWeb.Endpoint, "/js/embed.content.js")}
+          src={~p"/js/embed.content.js"}
         >
         </script>
       <% end %>
       <.footer :if={@footer?} />
-      <script type="text/javascript" src={Routes.static_path(PlausibleWeb.Endpoint, "/js/app.js")}>
+      <script type="text/javascript" src={~p"/js/app.js"}>
       </script>
       <%= if @load_dashboard_js? do %>
         <script
           type="text/javascript"
-          src={Routes.static_path(PlausibleWeb.Endpoint, "/js/dashboard.js")}
+          src={~p"/js/dashboard.js"}
         >
         </script>
       <% end %>

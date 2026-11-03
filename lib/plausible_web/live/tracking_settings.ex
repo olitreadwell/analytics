@@ -187,9 +187,9 @@ defmodule PlausibleWeb.Live.TrackingSettings do
     <.tooltip centered?={true} interactive?={false}>
       <:tooltip_content>Learn more</:tooltip_content>
       <.button_link
-        theme="icon"
+        theme="link"
         size="xs"
-        mt?={false}
+        icon?={true}
         href={@href}
         target="_blank"
         rel="noopener noreferrer"
@@ -202,9 +202,7 @@ defmodule PlausibleWeb.Live.TrackingSettings do
   end
 
   defp review_installation_path(site) do
-    Routes.site_path(PlausibleWeb.Endpoint, :installation, site.domain,
-      flow: PlausibleWeb.Flows.review()
-    )
+    ~p"/#{site.domain}/installation?#{[flow: PlausibleWeb.Flows.review()]}"
   end
 
   on_ee do

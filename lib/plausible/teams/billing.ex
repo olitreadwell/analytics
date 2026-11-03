@@ -65,9 +65,12 @@ defmodule Plausible.Teams.Billing do
 
   defp do_change_plan(subscription, new_plan_id) do
     res =
-      Plausible.Billing.paddle_api().update_subscription(subscription.paddle_subscription_id, %{
-        plan_id: new_plan_id
-      })
+      Plausible.Billing.PaddleClassic.api().update_subscription(
+        subscription.paddle_subscription_id,
+        %{
+          plan_id: new_plan_id
+        }
+      )
 
     case res do
       {:ok, response} ->
@@ -91,19 +94,6 @@ defmodule Plausible.Teams.Billing do
     team
     |> Ecto.assoc(:enterprise_plan)
     |> Repo.exists?()
-  end
-
-  def latest_enterprise_plan_with_price(team, customer_ip) do
-    enterprise_plan =
-      Repo.one!(
-        from(e in EnterprisePlan,
-          where: e.team_id == ^team.id,
-          order_by: [desc: e.inserted_at],
-          limit: 1
-        )
-      )
-
-    {enterprise_plan, Plausible.Billing.Plans.get_price_for(enterprise_plan, customer_ip)}
   end
 
   def has_active_subscription?(nil), do: false
@@ -233,6 +223,7 @@ defmodule Plausible.Teams.Billing do
     Teams.owned_sites_count(team)
   end
 
+  @spec team_member_limit(Teams.Team.t() | nil) :: non_neg_integer() | :unlimited
   on_ee do
     @team_member_limit_for_trials 10
 
@@ -256,7 +247,16 @@ defmodule Plausible.Teams.Billing do
       team_member_limit(team) == 0
     end
   else
-    def team_member_limit(_team), do: :unlimited
+    def team_member_limit(_team) do
+      # The `else` branch is not reachable.
+      # This a workaround for Elixir 1.18+ compiler
+      # being too smart.
+      if :erlang.phash2(1, 1) == 0 do
+        :unlimited
+      else
+        0
+      end
+    end
 
     def solo?(_team), do: always(false)
   end

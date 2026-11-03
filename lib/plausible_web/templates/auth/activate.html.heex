@@ -26,7 +26,7 @@
           </p>
         </div>
 
-        <.button type="submit" class="w-full" mt?={false}>
+        <.button type="submit" class="w-full">
           Activate account
         </.button>
       </.form>
@@ -37,7 +37,7 @@
           <.styled_link href="/activate/request-code" method="post">Resend code</.styled_link>
           or
           <%= if @has_any_memberships? do %>
-            <.styled_link method="post" href={Routes.settings_path(@conn, :cancel_update_email)}>
+            <.styled_link method="post" href={~p"/settings/security/email/cancel"}>
               use my previous email
             </.styled_link>
           <% else %>
@@ -64,7 +64,7 @@
       </div>
     <% else %>
       <div class="flex flex-col gap-y-2">
-        <.button_link method="post" class="w-full" href="/activate/request-code">
+        <.button_link method="post" class="w-full mt-6" href="/activate/request-code">
           Send activation code
         </.button_link>
         <p :if={@error} class="text-xs text-red-500 text-center">
@@ -75,7 +75,7 @@
       <p class="mt-6 text-sm text-gray-500 dark:text-gray-400 text-center">
         Wrong email?
         <%= if @has_any_memberships? do %>
-          <.styled_link method="post" href={Routes.settings_path(@conn, :cancel_update_email)}>
+          <.styled_link method="post" href={~p"/settings/security/email/cancel"}>
             use my previous email
           </.styled_link>
         <% else %>

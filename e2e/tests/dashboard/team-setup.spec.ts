@@ -1,5 +1,11 @@
-import { test, expect } from '@playwright/test'
-import { register, setupSite } from '../fixtures'
+import { test, expect, Page } from '@playwright/test'
+import {
+  login,
+  logout,
+  register,
+  setupSite,
+  subscribeToPlan
+} from '../fixtures'
 import { expectLiveViewConnected, randomID } from '../test-utils'
 
 test('submitting team name via Enter key does not crash', async ({
@@ -11,19 +17,15 @@ test('submitting team name via Enter key does not crash', async ({
 
   await expectLiveViewConnected(page)
 
-  await expect(page.getByRole('button', { name: 'Create Team' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Create team' })).toBeVisible()
 
   const nameInput = page.locator('input[name="team[name]"]')
 
   await nameInput.clear()
   await nameInput.fill('My New Team')
 
+  // Enter submits the whole form directly (single phx-submit handler)
   await nameInput.press('Enter')
-
-  await expect(nameInput).toHaveValue('My New Team')
-
-  // the form had no phx-submit handler and plain HTTP POST fallback was made
-  await page.getByRole('button', { name: 'Create Team' }).click()
 
   await expect(page).toHaveURL(/\/settings\/team\/general/)
 
@@ -34,7 +36,7 @@ test('submitting team name via Enter key does not crash', async ({
   await expect(nameInput2).toHaveValue('My New Team')
 })
 
-test('create team is blocked while the name is rejected', async ({
+test('add another button shows the next row, and disappears once the row limit is reached', async ({
   page,
   request
 }) => {
@@ -43,95 +45,156 @@ test('create team is blocked while the name is rejected', async ({
 
   await expectLiveViewConnected(page)
 
-  const createTeam = page.getByRole('button', { name: 'Create Team' })
-  const nameInput = page.locator('input[name="team[name]"]')
+  const addAnother = page.getByRole('button', { name: 'Add another' })
+  const visibleRows = page.locator('#member-rows > div:not(.hidden)')
+  // 10 is the team member limit for a trial account
+  const maxRows = 10
 
-  await expect(createTeam).toBeEnabled()
+  await expect(addAnother).toBeVisible()
+  await expect(page.locator('#member-rows > div')).toHaveCount(maxRows)
 
-  await nameInput.fill('My personal sites')
+  await addAnother.click()
 
-  await expect(page.locator('#update-team-form')).toContainText('is reserved')
-  await expect(createTeam).toBeDisabled()
+  await expect(
+    page.locator('#member-rows > div:nth-child(2) input[type="email"]')
+  ).toBeFocused()
 
-  await test.step('recovers once the name is fixed', async () => {
-    await nameInput.fill('Fixed Team Name')
-
-    await expect(createTeam).toBeEnabled()
-  })
-
-  await createTeam.click()
-
-  await expect(page).toHaveURL(/\/settings\/team\/general/)
-
-  await expectLiveViewConnected(page)
-
-  await expect(page.locator('input[name="team[name]"]')).toHaveValue(
-    'Fixed Team Name'
-  )
-})
-
-test('creating a team when the user name is long', async ({
-  page,
-  request
-}) => {
-  const userID = randomID()
-  // exactly 55 characters, prefixed with a unique ID so that `register` finds
-  // exactly one activation e-mail for this user
-  const longName = `${userID}${'a'.repeat(55)}`.slice(0, 55)
-  // the user name gets shortened to fit the 50 character team name limit
-  const expectedTeamName = `${longName.slice(0, 43)}'s team`
-
-  const user = {
-    name: longName,
-    email: `email-${userID}@example.com`,
-    password: 'VeryStrongVerySecret'
+  // one row already exists by default, one more was just added above
+  for (let i = 2; i < maxRows; i++) {
+    await addAnother.click()
   }
 
-  await register({ page, request, user })
-  await setupSite({ page, request, user })
+  await expect(visibleRows).toHaveCount(maxRows)
+  await expect(addAnother).toBeHidden()
+})
+
+test('removing and re-adding a row', async ({ page, request }) => {
+  await setupSite({ page, request })
+  // A growth plan with a team member limit of 3
+  await subscribeToPlan({ page, planId: '857097' })
 
   await page.goto('/team/setup', { waitUntil: 'commit' })
 
   await expectLiveViewConnected(page)
 
-  // the page mounts instead of crashing on the over-long suggested name
-  await expect(page.getByRole('button', { name: 'Create Team' })).toBeVisible()
+  const addAnother = page.getByRole('button', { name: 'Add another' })
+  const visibleRows = page.locator('#member-rows > div:not(.hidden)')
 
-  const nameInput = page.locator('input[name="team[name]"]')
+  const row1 = page.locator('#member-row-1')
+  const row2 = page.locator('#member-row-2')
+  const row3 = page.locator('#member-row-3')
 
-  await expect(nameInput).toHaveValue(expectedTeamName)
+  await row1.locator('input[type="email"]').fill('row1@example.com')
+  await row1.getByRole('button', { name: 'Role' }).click()
+  await row1.getByRole('option', { name: 'Admin' }).click()
 
-  await test.step('a name over the limit is rejected', async () => {
-    await nameInput.fill('b'.repeat(51))
+  await addAnother.click()
+  await row2.locator('input[type="email"]').fill('row2@example.com')
+  await row2.getByRole('button', { name: 'Role' }).click()
+  await row2.getByRole('option', { name: 'Editor' }).click()
 
-    await expect(page.locator('#update-team-form')).toContainText(
-      'should be at most 50 character(s)'
-    )
-    await expect(
-      page.getByRole('button', { name: 'Create Team' })
-    ).toBeDisabled()
-  })
+  await addAnother.click()
+  await row3.locator('input[type="email"]').fill('row3@example.com')
+  await row3.getByRole('button', { name: 'Role' }).click()
+  await row3.getByRole('option', { name: 'Billing' }).click()
 
-  await test.step('a name carrying a URL scheme is rejected', async () => {
-    await nameInput.fill('Cheap meds at https://spam.example.com')
+  await row2.getByRole('button', { name: 'Remove row' }).click()
 
-    await expect(page.locator('#update-team-form')).toContainText(
-      'cannot contain a URL'
-    )
-    await expect(
-      page.getByRole('button', { name: 'Create Team' })
-    ).toBeDisabled()
-  })
+  await expect(visibleRows).toHaveCount(2)
+  await expect(row2).toBeHidden()
 
-  await nameInput.fill('Chosen Team Name')
+  await expect(row1.locator('input[type="email"]')).toHaveValue(
+    'row1@example.com'
+  )
+  await expect(row1.getByTestId('role')).toHaveText('Admin')
 
-  await page.getByRole('button', { name: 'Create Team' }).click()
+  await expect(row3.locator('input[type="email"]')).toHaveValue(
+    'row3@example.com'
+  )
+  await expect(row3.getByTestId('role')).toHaveText('Billing')
 
-  await expect(page).toHaveURL(/\/settings\/team\/general/)
+  await addAnother.click()
 
+  await expect(visibleRows).toHaveCount(3)
+  await expect(visibleRows.nth(2)).toHaveAttribute('id', 'member-row-2')
+
+  await expect(row2.locator('input[type="email"]')).toHaveValue('')
+  await expect(row2.getByTestId('role')).toHaveText('Viewer')
+})
+
+function newUser() {
+  const userID = randomID()
+
+  return {
+    name: `User ${userID}`,
+    email: `email-${userID}@example.com`,
+    password: 'VeryStrongVerySecret'
+  }
+}
+
+async function createTeamInOnboarding(page: Page, teamName: string) {
+  await expect(page).toHaveURL(/\/team\/setup\?flow=register/)
   await expectLiveViewConnected(page)
 
-  await expect(page.locator('input[name="team[name]"]')).toHaveValue(
-    'Chosen Team Name'
-  )
+  const nameInput = page.locator('input[name="team[name]"]')
+  await nameInput.clear()
+  await nameInput.fill(teamName)
+
+  await page.getByRole('button', { name: 'Create team' }).click()
+}
+
+async function expectCurrentTeamOnSitesPage(page: Page, teamName: string) {
+  await page.goto('/sites', { waitUntil: 'commit' })
+  await expectLiveViewConnected(page)
+
+  await expect(page.getByRole('heading', { level: 2 })).toHaveText(teamName)
+}
+
+test('team created during onboarding after adding a site stays the current team', async ({
+  page,
+  request
+}) => {
+  const user = newUser()
+  const teamName = `Onboarded team ${randomID()}`
+
+  await register({ page, request, user })
+
+  await page.getByLabel('Domain').fill(`${randomID()}.example.com`)
+  await page.getByRole('button', { name: 'Add site' }).click()
+
+  await createTeamInOnboarding(page, teamName)
+
+  await expect(page).toHaveURL(/\/installation\?flow=register&__team=/)
+
+  // without the `__team` param
+  await expectCurrentTeamOnSitesPage(page, teamName)
+
+  // with a fresh session
+  await logout(page)
+  await login({ page, user })
+  await expectCurrentTeamOnSitesPage(page, teamName)
+})
+
+test('team created during onboarding after skipping adding a site stays the current team', async ({
+  page,
+  request
+}) => {
+  const user = newUser()
+  const teamName = `Onboarded team ${randomID()}`
+
+  await register({ page, request, user })
+
+  await page.getByRole('link', { name: 'Skip' }).click()
+
+  await createTeamInOnboarding(page, teamName)
+
+  await expect(page).toHaveURL(/\/sites\?__team=/)
+
+  // without the `__team` param
+  await expectCurrentTeamOnSitesPage(page, teamName)
+
+  // with a fresh session
+  await logout(page)
+  await login({ page, user })
+  await expectCurrentTeamOnSitesPage(page, teamName)
 })

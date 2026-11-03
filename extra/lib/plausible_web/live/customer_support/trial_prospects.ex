@@ -54,7 +54,12 @@ defmodule PlausibleWeb.Live.CustomerSupport.TrialProspects do
             />
             <.th>Feature tier</.th>
             <.th>Forced by</.th>
-            <.th>Traffic estimate</.th>
+            <.sort_th
+              label="Traffic estimate"
+              by="traffic"
+              sort_by={@sort_by}
+              sort_direction={@sort_direction}
+            />
             <.sort_th
               label="Trial start"
               by="trial_start"
@@ -62,12 +67,11 @@ defmodule PlausibleWeb.Live.CustomerSupport.TrialProspects do
               sort_direction={@sort_direction}
             />
             <.th>Trial expiry</.th>
+            <.th>Notes</.th>
           </:thead>
           <:tbody :let={p}>
             <.td>
-              <.styled_link patch={
-                Routes.customer_support_team_path(PlausibleWeb.Endpoint, :show, p.team.id)
-              }>
+              <.styled_link patch={~p"/cs/teams/team/#{p.team.id}"}>
                 {p.team.name}
               </.styled_link>
               <div :if={owner_email(p.team)} class="text-xs text-gray-500 dark:text-gray-400">
@@ -89,6 +93,7 @@ defmodule PlausibleWeb.Live.CustomerSupport.TrialProspects do
             <.td>{StatsView.large_number_format(p.estimated_monthly)}</.td>
             <.td>{format_date(trial_start(p.team))}</.td>
             <.td>{format_date(p.team.trial_expiry_date)}</.td>
+            <.td truncate max_width="max-w-40" title={p.team.notes}>{p.team.notes}</.td>
           </:tbody>
         </.table>
 
@@ -97,11 +102,7 @@ defmodule PlausibleWeb.Live.CustomerSupport.TrialProspects do
           id="trial-prospects-pagination"
           uri={
             URI.new!(
-              Routes.customer_support_trial_prospects_path(PlausibleWeb.Endpoint, :index,
-                sort_by: @sort_by,
-                sort_direction: @sort_direction,
-                page: @page_number
-              )
+              ~p"/cs/trial-prospects?#{[sort_by: @sort_by, sort_direction: @sort_direction, page: @page_number]}"
             )
           }
           page_number={@page_number}
@@ -131,12 +132,7 @@ defmodule PlausibleWeb.Live.CustomerSupport.TrialProspects do
     ~H"""
     <.th>
       <.link
-        patch={
-          Routes.customer_support_trial_prospects_path(PlausibleWeb.Endpoint, :index,
-            sort_by: @by,
-            sort_direction: @next_direction
-          )
-        }
+        patch={~p"/cs/trial-prospects?#{[sort_by: @by, sort_direction: @next_direction]}"}
         class="cursor-pointer select-none inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400"
       >
         {@label}

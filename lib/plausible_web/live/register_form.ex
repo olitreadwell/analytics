@@ -80,7 +80,7 @@ defmodule PlausibleWeb.Live.RegisterForm do
           for={@form}
           id="register-form"
           class="flex flex-col gap-y-6"
-          action={Routes.auth_path(@socket, :login)}
+          action={~p"/login"}
           onsubmit={form_submit_event(@invitation, @signup_previous_error)}
           phx-change="validate"
           phx-submit="register"
@@ -114,7 +114,6 @@ defmodule PlausibleWeb.Live.RegisterForm do
                 field={f[:password]}
                 strength={@password_strength}
                 phx-debounce={200}
-                mt?={false}
               />
             </div>
             <.password_length_hint minimum={12} field={f[:password]} hide_when_used?={true} />
@@ -135,7 +134,6 @@ defmodule PlausibleWeb.Live.RegisterForm do
               id="register"
               type="submit"
               class="w-full"
-              mt?={false}
               x-data={"{ captchaReady: #{not PlausibleWeb.Captcha.enabled?()} }"}
               x-on:frc-captcha-ready.window="captchaReady = true"
               x-on:frc-captcha-reset.window="captchaReady = false"
@@ -178,7 +176,6 @@ defmodule PlausibleWeb.Live.RegisterForm do
           field={@field}
           placeholder="Jane Doe"
           phx-debounce={200}
-          mt?={false}
           autofocus="autofocus"
         />
       </div>
@@ -207,7 +204,6 @@ defmodule PlausibleWeb.Live.RegisterForm do
           field={@field}
           placeholder="example@email.com"
           phx-debounce={200}
-          mt?={false}
           {@email_readonly}
         />
       </div>
@@ -255,7 +251,7 @@ defmodule PlausibleWeb.Live.RegisterForm do
         socket =
           socket
           |> put_flash(:error, message)
-          |> redirect(to: Routes.auth_path(socket, :login_form))
+          |> redirect(to: ~p"/login")
 
         {:noreply, socket}
     end
@@ -276,7 +272,7 @@ defmodule PlausibleWeb.Live.RegisterForm do
         socket =
           socket
           |> put_flash(:error, message)
-          |> redirect(to: Routes.auth_path(socket, :login_form))
+          |> redirect(to: ~p"/login")
 
         {:noreply, socket}
     end
