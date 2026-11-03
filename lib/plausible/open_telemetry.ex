@@ -52,7 +52,7 @@ defmodule Plausible.OpenTelemetry do
     end
   end
 
-  # https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/semantic_conventions/README.md#service
+  # https://opentelemetry.io/docs/specs/semconv/resource/service/
   def resource_attributes(runtime_metadata) do
     [
       {"service.name", "analytics"},
