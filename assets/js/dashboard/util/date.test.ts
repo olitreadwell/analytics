@@ -3,6 +3,7 @@ import {
   formatTime,
   formatMonthYYYY,
   formatISO,
+  isTodayOrYesterday,
   now,
   parseNaiveDate,
   formatDateRange,
@@ -333,5 +334,23 @@ describe('date-range predicates', () => {
         formatDateRange(site, parseNaiveDate('2025-06-05'), null)
       ).toBeUndefined()
     })
+  })
+})
+
+describe(isTodayOrYesterday.name, () => {
+  it('uses the UTC date, not the browser local date', () => {
+    // 2024-11-01T20:00Z is 2024-11-01 in UTC but already 2024-11-02 in
+    // time zones ahead of UTC (e.g. Pacific/Auckland, UTC+13).
+    jest.setSystemTime(new Date('2024-11-01T20:00:00.000Z'))
+    expect(isTodayOrYesterday('2024-11-01')).toBe(true)
+    expect(isTodayOrYesterday('2024-10-31')).toBe(true)
+    expect(isTodayOrYesterday('2024-11-02')).toBe(false)
+
+    // 2024-11-01T02:00Z is 2024-11-01 in UTC but still 2024-10-31 in
+    // time zones behind UTC (e.g. America/Los_Angeles, UTC-7).
+    jest.setSystemTime(new Date('2024-11-01T02:00:00.000Z'))
+    expect(isTodayOrYesterday('2024-11-01')).toBe(true)
+    expect(isTodayOrYesterday('2024-10-31')).toBe(true)
+    expect(isTodayOrYesterday('2024-10-30')).toBe(false)
   })
 })

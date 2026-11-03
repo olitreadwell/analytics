@@ -76,7 +76,7 @@ defmodule Plausible.Auth.TOTP.RecoveryCodeTest do
       assert RecoveryCode.disambiguate("AOBDIZLO12I") == "A8BD7ZL8127"
     end
 
-    test "leaves strings that have no sunch letters intact" do
+    test "leaves strings that have no such letters intact" do
       assert RecoveryCode.disambiguate("N0D0UBT") == "N0D0UBT"
     end
   end

@@ -17,7 +17,8 @@ defmodule Plausible.Postmark do
     "HardBounce" => :hard_bounce,
     "BadEmailAddress" => :bad_email_address,
     "Blocked" => :blocked,
-    "SpamNotification" => :spam_notification
+    "SpamNotification" => :spam_notification,
+    "Unsubscribe" => :unsubscribe
   }
 
   @spec suppressing_reason(String.t()) :: {:ok, atom()} | :error
@@ -55,6 +56,56 @@ defmodule Plausible.Postmark do
 
       {:error, reason} ->
         {:error, reason}
+    end
+  end
+
+  # Postmark limit
+  @delete_chunk_size 50
+
+  @doc """
+  Best-effort delete many suppressions at once, across every stream.
+  """
+  @spec delete_suppressions([String.t()]) :: [String.t()]
+  def delete_suppressions([]), do: []
+
+  def delete_suppressions(emails) do
+    emails
+    |> Enum.chunk_every(@delete_chunk_size)
+    |> Enum.flat_map(&delete_suppressions_chunk/1)
+  end
+
+  defp delete_suppressions_chunk(chunk) do
+    if @streams |> Enum.map(&delete_suppressions_chunk(&1, chunk)) |> Enum.all?() do
+      chunk
+    else
+      []
+    end
+  end
+
+  defp delete_suppressions_chunk(stream, emails) do
+    # https://postmarkapp.com/developer/api/suppressions-api#delete-a-suppression
+    case post("/message-streams/#{stream}/suppressions/delete", %{
+           "Suppressions" => Enum.map(emails, &%{"EmailAddress" => &1})
+         }) do
+      {:ok, %{"Suppressions" => results}} ->
+        case Enum.filter(results, &(&1["Status"] == "Failed")) do
+          [] ->
+            :ok
+
+          failed ->
+            Logger.warning(
+              "Failed to delete some Postmark suppressions, stream=#{stream}: #{inspect(failed)}"
+            )
+        end
+
+        true
+
+      {:error, reason} ->
+        Logger.error(
+          "Failed to delete a batch of #{length(emails)} Postmark suppressions, stream=#{stream}: #{inspect(reason)}"
+        )
+
+        false
     end
   end
 
