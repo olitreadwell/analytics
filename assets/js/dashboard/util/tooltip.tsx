@@ -109,6 +109,8 @@ export function Tooltip({
         ref={setReferenceElement}
         onMouseEnter={show}
         onMouseLeave={hide}
+        onFocus={show}
+        onBlur={hide}
         onClick={onClick}
       >
         {children}

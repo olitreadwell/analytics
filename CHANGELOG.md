@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Tooltips are now shown when their trigger is focused with the keyboard
 - Keybind hints are hidden on smaller screens
 - Prevent Mobile Safari auto-zooming into focused text inputs by raising their font size to 16px
 - Site index is sortable alphanumerically and by traffic
