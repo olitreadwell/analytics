@@ -8,13 +8,13 @@
     <meta name="project" content="Plausible v0.0.1">
 
 
-    <title>Plausible.Stats.QueryBuilder — Plausible v0.0.1</title>
+    <title>Plausible.ApiRequestLog.Entry — Plausible v0.0.1</title>
     <link rel="stylesheet" href="dist/html-elixir-P45HOAC7.css" />
 
 
     <script src="dist/handlebars.runtime-NWIB6V2M.js"></script>
     <script src="dist/handlebars.templates-K7URE6B4.js"></script>
-    <script src="dist/sidebar_items-C345EF2D.js"></script>
+    <script src="dist/sidebar_items-247AAB58.js"></script>
     <script src="docs_config.js"></script>
     <script async src="dist/html-PVRIOB7F.js"></script>
 
@@ -126,19 +126,19 @@ Pages
 <div id="top-content">
   <h1>
 
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/stats/query_builder.ex#L1" title="View Source" class="icon-action" rel="help">
+      <a href="https://github.com/plausible/analytics/blob/main/extra/lib/plausible/api_request_log/entry.ex#L1" title="View Source" class="icon-action" rel="help">
         <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         <span class="sr-only">View Source</span>
       </a>
 
-    <span translate="no">Plausible.Stats.QueryBuilder</span> 
+    <span translate="no">Plausible.ApiRequestLog.Entry</span> 
     <small class="app-vsn" translate="no">(Plausible v0.0.1)</small>
 
   </h1>
 
 
     <section id="moduledoc">
-<p>A module used for building the Query struct from already parsed params.</p>
+<p>ClickHouse schema for the <code class="inline">api_request_log</code> table.</p>
     </section>
 
 </div>
@@ -150,6 +150,28 @@ Pages
       </a>
       <span class="text">Summary</span>
     </h1>
+<div class="summary-types summary">
+  <h2>
+    <a href="#types">Types</a>
+  </h2>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:attrs/0" data-no-tooltip translate="no">attrs()</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:t/0" data-no-tooltip translate="no">t()</a>
+
+      </div>
+
+    </div>
+
+</div>
 <div class="summary-functions summary">
   <h2>
     <a href="#functions">Functions</a>
@@ -157,57 +179,7 @@ Pages
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#build/3" data-no-tooltip translate="no">build(site, parsed_query_params, debug_metadata \\ %{})</a>
-
-      </div>
-
-        <div class="summary-synopsis"><p>Runs various validations and builds a <code class="inline">%Query{}</code> from already parsed params.</p></div>
-
-    </div>
-
-    <div class="summary-row">
-      <div class="summary-signature">
-        <a href="#build!/3" data-no-tooltip translate="no">build!(site, params, debug_metadata \\ %{})</a>
-
-      </div>
-
-    </div>
-
-    <div class="summary-row">
-      <div class="summary-signature">
-        <a href="#get_consolidated_site_ids/1" data-no-tooltip translate="no">get_consolidated_site_ids(site)</a>
-
-      </div>
-
-    </div>
-
-    <div class="summary-row">
-      <div class="summary-signature">
-        <a href="#preload_goals_and_revenue/4" data-no-tooltip translate="no">preload_goals_and_revenue(site, metrics, filters, dimensions)</a>
-
-      </div>
-
-    </div>
-
-    <div class="summary-row">
-      <div class="summary-signature">
-        <a href="#preload_revenue/4" data-no-tooltip translate="no">preload_revenue(site, preloaded_goals, metrics, dimensions)</a>
-
-      </div>
-
-    </div>
-
-    <div class="summary-row">
-      <div class="summary-signature">
-        <a href="#put_comparison_utc_time_range/1" data-no-tooltip translate="no">put_comparison_utc_time_range(query)</a>
-
-      </div>
-
-    </div>
-
-    <div class="summary-row">
-      <div class="summary-signature">
-        <a href="#set_time_on_page_data/2" data-no-tooltip translate="no">set_time_on_page_data(query, site)</a>
+        <a href="#new/1" data-no-tooltip translate="no">new(attrs)</a>
 
       </div>
 
@@ -218,6 +190,94 @@ Pages
   </section>
 
 
+  <section id="types" class="details-list">
+    <h1 class="section-heading">
+      <a class="hover-link" href="#types">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Types</span>
+    </h1>
+    <div class="types-list">
+<section class="detail" id="t:attrs/0">
+
+  <div class="detail-header">
+    <a href="#t:attrs/0" class="detail-link" data-no-tooltip aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <h1 class="signature" translate="no">attrs()</h1>
+
+      <a href="https://github.com/plausible/analytics/blob/main/extra/lib/plausible/api_request_log/entry.ex#L17" class="icon-action" rel="help" aria-label="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> attrs() :: %{
+  timestamp: <a href="https://hexdocs.pm/elixir/DateTime.html#t:t/0">DateTime.t</a>(),
+  team: <a href="Plausible.Teams.Team.html#t:t/0">Plausible.Teams.Team.t</a>(),
+  credential: <a href="Plausible.Auth.ApiKey.html#t:t/0">Plausible.Auth.ApiKey.t</a>() | <a href="Plausible.OAuth.Grant.html#t:t/0">Plausible.OAuth.Grant.t</a>(),
+  interface: :rest | :mcp,
+  operation: <a href="https://hexdocs.pm/elixir/String.html#t:t/0">String.t</a>(),
+  status: <a href="https://hexdocs.pm/elixir/typespecs.html#basic-types">non_neg_integer</a>(),
+  billable: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">boolean</a>(),
+  request_id: <a href="https://hexdocs.pm/elixir/String.html#t:t/0">String.t</a>(),
+  user_agent: <a href="https://hexdocs.pm/elixir/String.html#t:t/0">String.t</a>()
+}</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:t/0">
+
+  <div class="detail-header">
+    <a href="#t:t/0" class="detail-link" data-no-tooltip aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <h1 class="signature" translate="no">t()</h1>
+
+      <a href="https://github.com/plausible/analytics/blob/main/extra/lib/plausible/api_request_log/entry.ex#L15" class="icon-action" rel="help" aria-label="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> t() :: %Plausible.ApiRequestLog.Entry{
+  __meta__: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">term</a>(),
+  billable: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">term</a>(),
+  credential_id: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">term</a>(),
+  credential_label: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">term</a>(),
+  credential_type: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">term</a>(),
+  interface: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">term</a>(),
+  operation: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">term</a>(),
+  request_id: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">term</a>(),
+  status: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">term</a>(),
+  team_id: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">term</a>(),
+  timestamp: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">term</a>(),
+  user_agent: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">term</a>(),
+  user_id: <a href="https://hexdocs.pm/elixir/typespecs.html#built-in-types">term</a>()
+}</pre>
+
+      </div>
+
+
+  </section>
+</section>
+
+    </div>
+  </section>
+
   <section id="functions" class="details-list">
     <h1 class="section-heading">
       <a class="hover-link" href="#functions">
@@ -226,17 +286,15 @@ Pages
       <span class="text">Functions</span>
     </h1>
     <div class="functions-list">
-<section class="detail" id="build/3">
-
-    <span id="build/2"></span>
+<section class="detail" id="new/1">
 
   <div class="detail-header">
-    <a href="#build/3" class="detail-link" data-no-tooltip aria-label="Link to this function">
+    <a href="#new/1" class="detail-link" data-no-tooltip aria-label="Link to this function">
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
-    <h1 class="signature" translate="no">build(site, parsed_query_params, debug_metadata \\ %{})</h1>
+    <h1 class="signature" translate="no">new(attrs)</h1>
 
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/stats/query_builder.ex#L28" class="icon-action" rel="help" aria-label="View Source">
+      <a href="https://github.com/plausible/analytics/blob/main/extra/lib/plausible/api_request_log/entry.ex#L72" class="icon-action" rel="help" aria-label="View Source">
        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
      </a>
 
@@ -245,128 +303,11 @@ Pages
 
   <section class="docstring">
 
-<p>Runs various validations and builds a <code class="inline">%Query{}</code> from already parsed params.</p><p>For convenience, the &quot;parsed params&quot; can also be given as a keyword list, in
-which case it gets turned in to <code class="inline">ParsedQueryParams</code> by the function itself.</p>
-  </section>
-</section>
-<section class="detail" id="build!/3">
+      <div class="specs">
 
-    <span id="build!/2"></span>
+          <pre translate="no"><span class="attribute">@spec</span> new(<a href="#t:attrs/0">attrs</a>()) :: <a href="#t:t/0">t</a>()</pre>
 
-  <div class="detail-header">
-    <a href="#build!/3" class="detail-link" data-no-tooltip aria-label="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <h1 class="signature" translate="no">build!(site, params, debug_metadata \\ %{})</h1>
-
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/stats/query_builder.ex#L68" class="icon-action" rel="help" aria-label="View Source">
-       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-     </a>
-
-
-  </div>
-
-  <section class="docstring">
-
-
-  </section>
-</section>
-<section class="detail" id="get_consolidated_site_ids/1">
-
-  <div class="detail-header">
-    <a href="#get_consolidated_site_ids/1" class="detail-link" data-no-tooltip aria-label="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <h1 class="signature" translate="no">get_consolidated_site_ids(site)</h1>
-
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/stats/query_builder.ex#L141" class="icon-action" rel="help" aria-label="View Source">
-       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-     </a>
-
-
-  </div>
-
-  <section class="docstring">
-
-
-  </section>
-</section>
-<section class="detail" id="preload_goals_and_revenue/4">
-
-  <div class="detail-header">
-    <a href="#preload_goals_and_revenue/4" class="detail-link" data-no-tooltip aria-label="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <h1 class="signature" translate="no">preload_goals_and_revenue(site, metrics, filters, dimensions)</h1>
-
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/stats/query_builder.ex#L126" class="icon-action" rel="help" aria-label="View Source">
-       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-     </a>
-
-
-  </div>
-
-  <section class="docstring">
-
-
-  </section>
-</section>
-<section class="detail" id="preload_revenue/4">
-
-  <div class="detail-header">
-    <a href="#preload_revenue/4" class="detail-link" data-no-tooltip aria-label="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <h1 class="signature" translate="no">preload_revenue(site, preloaded_goals, metrics, dimensions)</h1>
-
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/stats/query_builder.ex#L169" class="icon-action" rel="help" aria-label="View Source">
-       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-     </a>
-
-
-  </div>
-
-  <section class="docstring">
-
-
-  </section>
-</section>
-<section class="detail" id="put_comparison_utc_time_range/1">
-
-  <div class="detail-header">
-    <a href="#put_comparison_utc_time_range/1" class="detail-link" data-no-tooltip aria-label="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <h1 class="signature" translate="no">put_comparison_utc_time_range(query)</h1>
-
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/stats/query_builder.ex#L159" class="icon-action" rel="help" aria-label="View Source">
-       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-     </a>
-
-
-  </div>
-
-  <section class="docstring">
-
-
-  </section>
-</section>
-<section class="detail" id="set_time_on_page_data/2">
-
-  <div class="detail-header">
-    <a href="#set_time_on_page_data/2" class="detail-link" data-no-tooltip aria-label="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <h1 class="signature" translate="no">set_time_on_page_data(query, site)</h1>
-
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/stats/query_builder.ex#L150" class="icon-action" rel="help" aria-label="View Source">
-       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-     </a>
-
-
-  </div>
-
-  <section class="docstring">
+      </div>
 
 
   </section>
